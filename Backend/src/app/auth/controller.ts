@@ -12,7 +12,7 @@ import { User } from "./models";
 import {
   generateAccessToken,
   generateRefreshToken,
-} from "../../utils/token";
+} from "../utils/token";
 
 class AuthenticationHandler {
   // SIGNUP

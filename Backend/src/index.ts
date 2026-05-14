@@ -1,5 +1,7 @@
 import { createServer} from "node:http";
 import { applicationHandler } from "./app";
+import dotenv from 'dotenv';
+dotenv.config();
 import connectdb from "./db";
 
 async function main() {
@@ -10,7 +12,7 @@ async function main() {
         await connectdb();
         
         server.listen(PORT , ()=>{
-            console.log(`Server is lintening on PORT ${PORT}`);
+            console.log(`Server is listening on PORT ${PORT}`);
         })
 
     } catch(err){
