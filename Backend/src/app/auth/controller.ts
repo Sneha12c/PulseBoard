@@ -21,10 +21,7 @@ class AuthenticationHandler {
     res: Response
   ) {
     try {
-      const validationResult =
-        await registerSchema.safeParseAsync(
-          req.body
-        );
+      const validationResult = await registerSchema.safeParseAsync(req.body);
 
       if (!validationResult.success) {
         return res.status(400).json({
@@ -82,18 +79,14 @@ class AuthenticationHandler {
           httpOnly: true,
           secure: false,
           sameSite: "strict",
-          maxAge:
-            7 * 24 * 60 * 60 * 1000,
+          path: "/"
         }
       );
 
       return res.status(201).json({
         success: true,
-        message:
-          "User registered successfully",
-
+        message: "User registered successfully",
         accessToken,
-
         user: {
           id: user._id,
           username: user.username,
@@ -155,25 +148,24 @@ class AuthenticationHandler {
       }
 
       // generate tokens
-      const accessToken =
-        generateAccessToken(
-          userResult._id.toString(),
-          userResult.email
-        );
-
-      const refreshToken =
-        generateRefreshToken(
-          userResult._id.toString(),
-          userResult.email
-        );
+      const accessToken = generateAccessToken(userResult._id.toString(), userResult.email);
+      const refreshToken = generateRefreshToken(userResult._id.toString(),userResult.email);
 
       // store refresh token
-      userResult.refreshToken =
-        refreshToken;
-
+      userResult.refreshToken = refreshToken;
       await userResult.save();
 
       // cookie
+      res.cookie(
+        "accessToken",
+        accessToken,
+        {
+          httpOnly: true,
+          secure: false,
+          sameSite: "strict",
+          path: "/"
+        }
+      );
       res.cookie(
         "refreshToken",
         refreshToken,
@@ -181,21 +173,15 @@ class AuthenticationHandler {
           httpOnly: true,
           secure: false,
           sameSite: "strict",
-          maxAge:
-            7 * 24 * 60 * 60 * 1000,
+          path: "/"
         }
       );
 
       return res.status(200).json({
         success: true,
         message: "Login successful",
-
-        accessToken,
-
         user: {
-          id: userResult._id,
-          username:
-            userResult.username,
+          username: userResult.username,
           email: userResult.email,
         },
       });
@@ -301,8 +287,7 @@ class AuthenticationHandler {
 
       return res.status(200).json({
         success: true,
-        accessToken:
-          newAccessToken,
+        accessToken: newAccessToken,
       });
     } catch (error) {
       return res.status(401).json({
@@ -318,8 +303,7 @@ class AuthenticationHandler {
     res: Response
   ) {
     try {
-      const refreshToken =
-        req.cookies.refreshToken;
+      const refreshToken =req.cookies.refreshToken;
 
       if (refreshToken) {
         const user =
@@ -332,8 +316,19 @@ class AuthenticationHandler {
           await user.save();
         }
       }
-
-      res.clearCookie("refreshToken");
+      
+      res.clearCookie('accessToken', {
+        httpOnly: true,
+        secure: false,
+        sameSite: "strict",
+        path: "/"
+      });
+      res.clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: false,
+        sameSite: "strict",
+        path: "/"
+      });
 
       return res.status(200).json({
         success: true,

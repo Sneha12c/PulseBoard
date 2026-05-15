@@ -13,7 +13,7 @@ class PollHandler{
         if(!pollvalidationResult.success){
         return res.status(400).json({ message: "Body validation failed", error: pollvalidationResult.error.issues});
         }
-        
+        console.log(pollvalidationResult);
         const { authenticated, expiryTime, questionList} = pollvalidationResult.data;
         
         const expiryDate = new Date(expiryTime);
@@ -38,8 +38,16 @@ class PollHandler{
 
         return res.status(201).json({ message: "Poll created successfully", link: polllink});
      }catch(err){
-        return res.status(500).json({ message: "Internal Server Error"});
+        return res.status(500).json({ message: "Internal Server Error", err});
      }
+   }
+
+   public async fetchallPoll(req: AuthRequest, res: Response){
+      const allpolls = await poll.find({ userId: req.user.id});
+      if(!allpolls){
+        return res.status(400).json({message: "No polls found for this user"});
+      }
+      return res.status(200).json({message: "All polls fetched", allpolls});
    }
 
    public async fetchPoll(req: Request, res: Response){
