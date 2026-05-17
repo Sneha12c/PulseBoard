@@ -13,7 +13,7 @@ class PollHandler{
         if(!pollvalidationResult.success){
         return res.status(400).json({ message: "Body validation failed", error: pollvalidationResult.error.issues});
         }
-        console.log(pollvalidationResult);
+        
         const { authenticated, expiryTime, questionList} = pollvalidationResult.data;
         
         const expiryDate = new Date(expiryTime);
@@ -38,32 +38,20 @@ class PollHandler{
 
         return res.status(201).json({ message: "Poll created successfully", link: polllink});
      }catch(err){
-        return res.status(500).json({ message: "Internal Server Error", err});
+        return res.status(500).json({ message: "Internal Server Error"});
      }
-   }
-
-   public async fetchallPoll(req: AuthRequest, res: Response){
-      const allpolls = await poll.find({ userId: req.user.id});
-      if(!allpolls){
-        return res.status(400).json({message: "No polls found for this user"});
-      }
-      return res.status(200).json({message: "All polls fetched", allpolls});
    }
 
    public async fetchPoll(req: Request, res: Response){
     const { pollLink } = req.params;
-    console.log(pollLink);
-    if(typeof pollLink != "string"){
-      return res.status(404).json({ message: "Invalid Poll link"});
-    }
-    const pollResult = await poll.findOne({polllink: pollLink})
+    const pollResult = await poll.findOne({pollLink})
     if(!pollResult){
       return res.status(404).json({ message: "Invalid Poll link"});
     }
     if(new Date() > new Date(pollResult.expiryTime)){
       return res.status(400).json({message : "Poll link is expired"});
     }
-    return res.status(200).json({ message : "poll fetched", pollResult: pollResult.questionList});
+    return res.status(200).json({ message : "poll fetched", pollResult.questionList});
    }
    
    public async handlePublish(req: AuthRequest, res: Response){
@@ -87,23 +75,23 @@ class PollHandler{
    }
 
     public async handleAnalytics(req: AuthRequest, res: Response){
-      const { pollLink } = req.params;
-      console.log(pollLink);
-      if (typeof pollLink != "string") {
+      const { pollId } = req.params;
+      if (!pollId) {
         return res.status(400).json({
-            message: "Poll Link required",
+            message: "Poll ID required",
         }); 
       }
-      const pollResult = await poll.findOne({polllink: pollLink});
+      const pollResult = await poll.findById(pollId);
 
       if (!pollResult) {
         return res.status(404).json({
           message: "Poll not found",
         });
       }
-      const totalResponses = await responseModel.countDocuments({pollId: pollResult._id });
+      
+      const totalResponses = await responseModel.countDocuments({pollId: pollResult._id});
       const analyticsResult = await responseModel.aggregate([
-        { $match: { pollId: pollResult._id }},
+        { $match: { pollId: pollId }},
         { $unwind: "$answerList" },
         { $group: { _id : { questionId: "$answerList.questionId", option: "$answerList.selectedOption"}, count: { $sum: 1,}}}
       ]);

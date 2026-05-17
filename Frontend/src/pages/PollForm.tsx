@@ -22,26 +22,20 @@ function PollForm() {
 
   const fetchPoll =
     async () => {
-      const res =
-        await api.get(
-          `/poll/${pollLink}`
-        );
-
+      console.log(pollLink);
+      const res = await api.get(`/poll/${pollLink}`);
       setPoll(res.data.pollResult);
     };
 
   const submitResponse =
     async () => {
-      await api.post(
-        `/response/${pollLink}`,
-        {
-          answers,
-        }
-      );
-
-      alert(
-        "Submitted"
-      );
+      try{
+        await api.post(`/response/submit/${pollLink}`, { answers,});
+        alert("Submitted");
+      }catch(error){
+        console.log(error);
+        alert(error);
+      }
     };
 
   if (!poll)
@@ -53,7 +47,7 @@ function PollForm() {
         Poll
       </h1>
 
-      {poll.questionList.map(
+      {poll.map(
         (
           question: any,
           index: number
@@ -68,7 +62,7 @@ function PollForm() {
               }
             </h2>
 
-            {question.optionlist.map(
+            {question.optionList.map(
               (
                 option: string
               ) => (

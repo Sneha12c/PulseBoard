@@ -7,7 +7,7 @@ interface IAnswer {
 
 export interface IResponse extends Document{
     userId: Types.ObjectId,
-    pollId: Types.ObjectId,
+    pollId?: Types.ObjectId,
     answerList: IAnswer[],
     submitTime: Date,
 }
@@ -30,7 +30,7 @@ const responseSchema = new Schema<IResponse>({
     userId : {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
-        required: true,
+        required: false,
     },
     pollId : {
         type: mongoose.Schema.Types.ObjectId,

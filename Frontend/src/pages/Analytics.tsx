@@ -12,15 +12,17 @@ import api from "../api/axios";
 import { socket } from "../Socket/socket";
 
 function Analytics() {
-  const { pollId } = useParams();
-
+  const { pollLink } = useParams();
+  console.log(pollLink);
   const [analytics, setAnalytics] = useState<any>(null);
 
-  useEffect(() => { fetchAnalytics();
-    socket.emit("join_poll", pollId);
+  useEffect(() => { 
+    fetchAnalytics();
+    socket.emit("join-poll", pollLink);
 
-    socket.on( "analytics_updated", () => {
-        fetchAnalytics();
+    socket.on( "poll-analytics-updated", (data) => {
+        console.log("Analytics updated:", data);
+        setAnalytics(data);
       }
     );
 
@@ -31,17 +33,10 @@ function Analytics() {
     };
   }, []);
 
-  const fetchAnalytics =
-    async () => {
-      const res =
-        await api.get(
-          `/poll/analytics/${pollId}`
-        );
-
-      setAnalytics(
-        res.data
-      );
-    };
+  const fetchAnalytics = async () => {
+    const res = await api.get(`/poll/analytics/${pollLink}`);
+    setAnalytics(res.data);
+  };
 
   return (
     <div className="p-6">
@@ -56,7 +51,7 @@ function Analytics() {
         }
       </p>
 
-      {analytics?.analytics.map(
+      {analytics?.analyticsResult.map(
         (
           item: any,
           index: number
@@ -64,25 +59,14 @@ function Analytics() {
           <div key={index}>
             <p>
               Question:
-              {
-                item._id
-                  .questionId
-              }
+              {item._id.questionId}
+            </p>
+            <p>
+              Option: {item._id.option}
             </p>
 
             <p>
-              Option:
-              {
-                item._id
-                  .option
-              }
-            </p>
-
-            <p>
-              Votes:
-              {
-                item.count
-              }
+              Votes: { item.count}
             </p>
           </div>
         )

@@ -41,7 +41,7 @@ function App() {
         />
 
         <Route
-          path="/analytics/:pollId"
+          path="/analytics/:pollLink"
           element={<Analytics />}
         />
       </Routes>

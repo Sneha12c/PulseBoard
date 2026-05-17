@@ -3,6 +3,8 @@ import { applicationHandler } from "./app";
 import dotenv from 'dotenv';
 dotenv.config();
 import connectdb from "./db";
+import SocketService from "./app/socket/socket";
+import { setSocketService } from "./app/socket/socketInstance";
 
 async function main() {
     try{
@@ -10,10 +12,14 @@ async function main() {
         const PORT:number = process.env.PORT ? +process.env.PORT : 8000;
         
         await connectdb();
+        const socketservice = new SocketService(server);
+        socketservice.connectSocket();
+        setSocketService(socketservice);
         
         server.listen(PORT , ()=>{
             console.log(`Server is listening on PORT ${PORT}`);
         })
+
 
     } catch(err){
         console.log("error", err);
